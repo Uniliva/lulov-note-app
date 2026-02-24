@@ -190,6 +190,25 @@
     }
     .item-row input { margin: 0; }
 
+    @media (max-width: 540px) {
+      .card { padding: 16px; }
+
+      .item-header { display: none; }
+
+      .item-row {
+        grid-template-columns: 1fr 1fr 1fr 34px;
+        grid-template-rows: auto auto;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      .item-row:last-child { border-bottom: none; }
+
+      .item-row .item-desc {
+        grid-column: 1 / -1;
+      }
+    }
+
     .btn-remove {
       background: #ffebeb;
       color: #d00;
