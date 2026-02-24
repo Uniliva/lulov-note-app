@@ -18,13 +18,29 @@ O site possui proteção por senha. O hash da senha é injetado automaticamente 
 
 ### Como configurar
 
-1. Vá em **Settings → Secrets and variables → Actions** no seu repositório
-2. Crie um secret chamado `PASSWORD` com a senha desejada (ex: `minha-senha-secreta`)
-3. Em **Settings → Pages**, defina o source como **GitHub Actions**
-4. Faça push para a branch `main` — o workflow fará o deploy automaticamente
+Vá em **Settings → Secrets and variables → Actions** no repositório e cadastre:
+
+**Secrets** (dados sensíveis — ficam ocultos nos logs):
+
+| Nome       | Descrição            | Exemplo              |
+|------------|----------------------|----------------------|
+| `PASSWORD` | Senha de acesso ao site | `minha-senha-secreta` |
+
+**Variables** (dados não sensíveis — visíveis nos logs):
+
+| Nome               | Descrição              | Exemplo                                                      |
+|--------------------|------------------------|--------------------------------------------------------------|
+| `COMPANY_NAME`     | Nome da empresa        | `Marmoraria Santa Cruz`                                      |
+| `COMPANY_ADDRESS`  | Endereço completo      | `Rua dos Trabalhadores, 12, Jd. N. S. de Fátima – Embu das Artes/SP` |
+| `COMPANY_CNPJ`     | CNPJ                   | `51.909.664/0001-20`                                         |
+| `COMPANY_CITY`     | Cidade/UF              | `Embu das Artes/SP`                                          |
+
+Em seguida:
+1. Em **Settings → Pages**, defina o source como **GitHub Actions**
+2. Faça push para a branch `main` — o workflow fará o deploy automaticamente
 
 ### Como funciona
 
-- O arquivo `index.html` contém o placeholder `__PASSWORD_HASH__` no lugar do hash
-- O workflow calcula o SHA-256 da senha definida no secret e substitui o placeholder antes de publicar
-- A senha nunca fica exposta no código-fonte do repositório
+- O `index.html` no repositório contém placeholders (`__COMPANY_NAME__`, `__COMPANY_CNPJ__`, etc.)
+- O workflow do GitHub Actions substitui todos os placeholders pelos valores configurados antes de publicar
+- A senha e os dados da empresa nunca ficam expostos no código-fonte do repositório

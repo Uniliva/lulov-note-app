@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Marmoraria Santa Cruz — Gerador de Orçamentos</title>
+  <title>__COMPANY_NAME__ — Gerador de Orçamentos</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     /* ── Tela de senha ── */
@@ -370,7 +370,7 @@
   <!-- Tela de senha -->
   <div id="password-overlay">
     <div id="password-box">
-      <div class="brand">MARMORARIA SANTA CRUZ</div>
+      <div class="brand">__COMPANY_NAME_UPPER__</div>
       <h2>Acesso Restrito</h2>
       <p>Digite a senha para continuar</p>
       <input type="password" id="password-input" placeholder="Senha" onkeydown="if(event.key==='Enter')checkPassword()">
@@ -380,8 +380,8 @@
   </div>
 
   <header>
-    <h1>Marmoraria Santa Cruz</h1>
-    <p>Gerador de Orçamentos — Embu das Artes/SP</p>
+    <h1>__COMPANY_NAME__</h1>
+    <p>Gerador de Orçamentos — __COMPANY_CITY__</p>
   </header>
 
   <div class="container">
@@ -685,8 +685,8 @@
 
       document.getElementById('os-content').innerHTML = `
         <div class="pdf-brand">
-          <div class="pdf-brand-name">MARMORARIA SANTA CRUZ</div>
-          <div class="pdf-brand-info">Embu das Artes / SP<br>CNPJ 51.909.664/0001-20</div>
+          <div class="pdf-brand-name">__COMPANY_NAME_UPPER__</div>
+          <div class="pdf-brand-info">__COMPANY_CITY__<br>CNPJ __COMPANY_CNPJ__</div>
         </div>
 
         <div class="os-title">ORÇAMENTO</div>
@@ -695,15 +695,15 @@
           <tr><th colspan="4">DADOS DA EMPRESA</th></tr>
           <tr>
             <td class="lbl">Empresa</td>
-            <td colspan="3">Marmoraria Santa Cruz</td>
+            <td colspan="3">__COMPANY_NAME__</td>
           </tr>
           <tr>
             <td class="lbl">Endereço</td>
-            <td colspan="3">Rua dos Trabalhadores, 12, Jd. N. S. de Fátima – Embu das Artes/SP</td>
+            <td colspan="3">__COMPANY_ADDRESS__</td>
           </tr>
           <tr>
             <td class="lbl">CNPJ</td>
-            <td style="white-space:nowrap; min-width:160px">51.909.664/0001-20</td>
+            <td style="white-space:nowrap; min-width:160px">__COMPANY_CNPJ__</td>
             <td class="lbl" style="width:14%">Nº OS</td>
             <td style="white-space:nowrap"><strong>OS-${osNum}</strong></td>
           </tr>
@@ -761,7 +761,7 @@
 
         <div class="signature-area">
           <div class="sig-box" style="border-top:2px solid ${p.accent};color:${p.primary}">
-            Marmoraria Santa Cruz<br>
+            __COMPANY_NAME__<br>
             <br/>
           </div>
           <div class="sig-box" style="border-top:2px solid ${p.accent};color:${p.primary}">

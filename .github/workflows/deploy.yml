@@ -25,10 +25,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Injetar hash da senha
+      - name: Injetar variáveis no HTML
+        env:
+          PASSWORD:         ${{ secrets.PASSWORD }}
+          COMPANY_NAME:     ${{ vars.COMPANY_NAME }}
+          COMPANY_ADDRESS:  ${{ vars.COMPANY_ADDRESS }}
+          COMPANY_CNPJ:     ${{ vars.COMPANY_CNPJ }}
+          COMPANY_CITY:     ${{ vars.COMPANY_CITY }}
         run: |
-          HASH=$(echo -n "${{ secrets.PASSWORD }}" | sha256sum | awk '{print $1}')
-          sed -i "s/__PASSWORD_HASH__/$HASH/g" index.html
+          python3 - <<'EOF'
+          import os, hashlib
+
+          with open('index.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+
+          password      = os.environ['PASSWORD']
+          pw_hash       = hashlib.sha256(password.encode()).hexdigest()
+          company_name  = os.environ['COMPANY_NAME']
+          company_upper = company_name.upper()
+
+          html = html.replace('__PASSWORD_HASH__',    pw_hash)
+          html = html.replace('__COMPANY_NAME_UPPER__', company_upper)
+          html = html.replace('__COMPANY_NAME__',     company_name)
+          html = html.replace('__COMPANY_ADDRESS__',  os.environ['COMPANY_ADDRESS'])
+          html = html.replace('__COMPANY_CNPJ__',     os.environ['COMPANY_CNPJ'])
+          html = html.replace('__COMPANY_CITY__',     os.environ['COMPANY_CITY'])
+
+          with open('index.html', 'w', encoding='utf-8') as f:
+              f.write(html)
+
+          print("✓ Substituições concluídas")
+          EOF
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
