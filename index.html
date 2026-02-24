@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marmoraria Santa Cruz — Gerador de Orçamentos</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    /* ── Tela de senha ── */
+    #password-overlay {
+      position: fixed;
+      inset: 0;
+      background: #162D4F;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    #password-box {
+      background: white;
+      border-radius: 12px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    #password-box h2 {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      color: #162D4F;
+      font-size: 17px;
+      margin-bottom: 6px;
+    }
+    #password-box p {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      color: #999;
+      font-size: 12px;
+      margin-bottom: 22px;
+    }
+    #password-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      margin-bottom: 14px;
+      box-sizing: border-box;
+    }
+    #password-input:focus { outline: none; border-color: #C5AB56; }
+    #password-submit {
+      width: 100%;
+      padding: 11px;
+      background: #162D4F;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    #password-submit:hover { filter: brightness(1.2); }
+    #password-error {
+      color: #c00;
+      font-size: 12px;
+      margin-top: 10px;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      display: none;
+    }
+    #password-box .brand {
+      color: #C5AB56;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 18px;
+    }
+
+    :root {
+      --primary: #162D4F;
+      --accent:  #C5AB56;
+      --bg:      #EAEAE0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: #333;
+      transition: background 0.3s;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 18px 32px;
+      border-bottom: 4px solid var(--accent);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    header h1 { font-size: 20px; font-weight: 700; }
+    header p  { font-size: 12px; opacity: 0.6; margin-top: 2px; }
+
+    .container {
+      max-width: 700px;
+      margin: 28px auto;
+      padding: 0 16px 40px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--primary);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 7px;
+      margin-bottom: 18px;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      font-size: 14px;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    input:focus { outline: none; border-color: var(--accent); }
+
+    /* ── Select paleta ── */
+    #palette-select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      font-size: 14px;
+      font-family: inherit;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      appearance: auto;
+    }
+    #palette-select:focus { outline: none; border-color: var(--accent); }
+
+    /* ── Itens ── */
+    .item-header {
+      display: grid;
+      grid-template-columns: 1fr 70px 80px 90px 34px;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .item-header span {
+      font-size: 10px;
+      font-weight: 700;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 1fr 70px 80px 90px 34px;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .item-row input { margin: 0; }
+
+    .btn-remove {
+      background: #ffebeb;
+      color: #d00;
+      border: 1px solid #fbb;
+      border-radius: 6px;
+      width: 34px;
+      height: 36px;
+      cursor: pointer;
+      font-size: 17px;
+      line-height: 1;
+      transition: background 0.2s;
+    }
+    .btn-remove:hover { background: #ffd0d0; }
+
+    .btn-add {
+      background: transparent;
+      border: 2px dashed #ccc;
+      color: #999;
+      padding: 9px;
+      border-radius: 7px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 4px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-add:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-generate {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: filter 0.2s, background 0.3s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-generate:hover   { filter: brightness(1.22); }
+    .btn-generate:disabled { background: #aaa; cursor: not-allowed; filter: none; }
+
+    /* =====================
+       OS - Conteúdo do PDF
+    ===================== */
+    #os-wrapper {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      width: 794px;
+    }
+
+    #os-content {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #000;
+      padding: 0 28px 24px;
+      background: white;
+      font-size: 11px;
+    }
+
+    #os-content .pdf-brand {
+      background: #162D4F;
+      margin: 0 -28px 18px;
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #os-content .pdf-brand-name {
+      font-size: 15px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #C5AB56;
+    }
+    #os-content .pdf-brand-info {
+      font-size: 9px;
+      color: rgba(197,171,86,0.70);
+      text-align: right;
+      line-height: 1.6;
+    }
+
+    #os-content .os-title {
+      text-align: center;
+      font-size: 15px;
+      font-weight: bold;
+      letter-spacing: 5px;
+      color: #162D4F;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #C5AB56;
+      margin-bottom: 14px;
+    }
+
+    #os-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      font-size: 11px;
+    }
+
+    #os-content table th {
+      background: #162D4F;
+      color: #C5AB56;
+      padding: 6px 10px;
+      text-align: left;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-bottom: 2px solid #C5AB56;
+    }
+
+    #os-content table td {
+      border: 1px solid #d5d8e0;
+      padding: 6px 10px;
+      vertical-align: middle;
+    }
+
+    #os-content table tr:nth-child(even) td {
+      background: #F2F1E8;
+    }
+
+    #os-content .lbl {
+      font-weight: bold;
+      background: #E8E7D6 !important;
+      border-left: 3px solid #C5AB56 !important;
+      width: 26%;
+      white-space: nowrap;
+      color: #162D4F;
+    }
+
+    #os-content .total-row td {
+      background: #162D4F !important;
+      color: white !important;
+      font-weight: bold;
+      font-size: 12px;
+    }
+    #os-content .total-val {
+      color: #C5AB56 !important;
+    }
+
+    #os-content .signature-area {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 36px;
+    }
+    #os-content .sig-box {
+      width: 44%;
+      border-top: 2px solid #C5AB56;
+      padding-top: 8px;
+      font-size: 10px;
+      text-align: center;
+      color: #162D4F;
+      font-weight: bold;
+    }
+    #os-content .sig-box span {
+      font-weight: normal;
+      color: #888;
+    }
+
+    #os-content .footer {
+      font-size: 9px;
+      color: #999;
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(197,171,86,0.33);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tela de senha -->
+  <div id="password-overlay">
+    <div id="password-box">
+      <div class="brand">MARMORARIA SANTA CRUZ</div>
+      <h2>Acesso Restrito</h2>
+      <p>Digite a senha para continuar</p>
+      <input type="password" id="password-input" placeholder="Senha" onkeydown="if(event.key==='Enter')checkPassword()">
+      <button id="password-submit" onclick="checkPassword()">Entrar</button>
+      <div id="password-error">Senha incorreta. Tente novamente.</div>
+    </div>
+  </div>
+
+  <header>
+    <h1>Marmoraria Santa Cruz</h1>
+    <p>Gerador de Orçamentos — Embu das Artes/SP</p>
+  </header>
+
+  <div class="container">
+
+    <!-- Paleta de Cores -->
+    <div class="card">
+      <div class="section-title">Paleta de Cores do PDF</div>
+      <select id="palette-select" onchange="selectPalette(this.value)">
+        <option value="graceland">Graceland — Azul Noite &amp; Ouro</option>
+        <option value="grupomarmor">Grupo Marmor — Azul &amp; Amarelo</option>
+        <option value="salome">Marmor Salomé — Vinho &amp; Rosê</option>
+      </select>
+    </div>
+
+    <!-- Cliente -->
+    <div class="card">
+      <div class="section-title">Dados do Cliente</div>
+      <div class="form-group">
+        <label>Nome do Cliente</label>
+        <input type="text" id="clientName" placeholder="Ex: João Silva">
+      </div>
+      <div class="form-group">
+        <label>Endereço</label>
+        <input type="text" id="clientAddress" placeholder="Deixe em branco para N/A">
+      </div>
+    </div>
+
+    <!-- Valor -->
+    <div class="card">
+      <div class="section-title">Valor do Orçamento</div>
+      <div class="form-group">
+        <label>Valor Total (R$) <span id="total-hint" style="font-weight:400;color:#aaa;font-size:11px">— calculado automaticamente pelos itens</span></label>
+        <input type="text" id="totalValue" inputmode="decimal" placeholder="Ex: 2.000,00" oninput="onTotalInput()" onblur="fmtBRLInput(this)">
+      </div>
+    </div>
+
+    <!-- Itens -->
+    <div class="card">
+      <div class="section-title">Itens</div>
+      <div class="item-header">
+        <span>Descrição</span>
+        <span>Qtd</span>
+        <span>Unidade</span>
+        <span>Valor Unit.</span>
+        <span></span>
+      </div>
+      <div id="items-list"></div>
+      <button class="btn-add" onclick="addItem()">+ Adicionar Item</button>
+    </div>
+
+    <button class="btn-generate" id="btn-gen" onclick="generatePDF()">
+      &#8595; Gerar PDF
+    </button>
+
+  </div>
+
+  <!-- PDF template (fora da tela) -->
+  <div id="os-wrapper">
+    <div id="os-content"></div>
+  </div>
+
+  <script>
+    /* ── Autenticação ── */
+    const EXPECTED_HASH = '__PASSWORD_HASH__';
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function checkPassword() {
+      const input = document.getElementById('password-input').value;
+      const hash = await sha256(input);
+      if (hash === EXPECTED_HASH) {
+        document.getElementById('password-overlay').style.display = 'none';
+        sessionStorage.setItem('auth', '1');
+      } else {
+        document.getElementById('password-error').style.display = 'block';
+        document.getElementById('password-input').value = '';
+        document.getElementById('password-input').focus();
+      }
+    }
+
+    if (sessionStorage.getItem('auth') === '1') {
+      document.getElementById('password-overlay').style.display = 'none';
+    }
+  </script>
+
+  <script>
+    /* ── Paletas ── */
+    const PALETTES = {
+      graceland: {
+        primary:      '#162D4F',
+        accent:       '#C5AB56',
+        accentMuted:  'rgba(197,171,86,0.70)',
+        accentFaint:  'rgba(197,171,86,0.33)',
+        lblBg:        '#E8E7D6',
+        evenRow:      '#F2F1E8',
+        appBg:        '#EAEAE0'
+      },
+      grupomarmor: {
+        primary:      '#104B7F',
+        accent:       '#F2BF27',
+        accentMuted:  'rgba(242,191,39,0.70)',
+        accentFaint:  'rgba(242,191,39,0.33)',
+        lblBg:        '#D5E8F5',
+        evenRow:      '#EAF3FB',
+        appBg:        '#E5F0FA'
+      },
+      salome: {
+        primary:      '#030F17',
+        accent:       '#D98B84 ',
+        accentMuted:  'rgba(217,139,132,0.70)',
+        accentFaint:  'rgba(217,139,132,0.33)',
+        lblBg:        '#F2DCD8',
+        evenRow:      '#FAF0EE',
+        appBg:        '#FDF5F4'
+      }
+    };
+
+    let currentPalette = 'graceland';
+
+    function selectPalette(key) {
+      currentPalette = key;
+      const p = PALETTES[key];
+      const root = document.documentElement;
+      root.style.setProperty('--primary', p.primary);
+      root.style.setProperty('--accent',  p.accent);
+      root.style.setProperty('--bg',      p.appBg);
+    }
+
+    /* ── Itens ── */
+    let itemCount = 0;
+
+    function parseBRL(val) {
+      if (!val) return 0;
+      val = String(val).trim();
+      if (val.includes('.') && val.includes(',')) {
+        val = val.replace(/\./g, '').replace(',', '.');
+      } else if (val.includes(',')) {
+        val = val.replace(',', '.');
+      }
+      return parseFloat(val) || 0;
+    }
+
+    function fmtBRLInput(input) {
+      const v = parseBRL(input.value);
+      if (v > 0) {
+        input.value = v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+    }
+
+    window.onload = () => {
+      selectPalette('graceland');
+      addItem('Pedra', '', 'm²');
+      addItem('Mão de obra', '', 'serv.');
+    };
+
+    function addItem(desc = '', qty = '', unit = '', price = '') {
+      itemCount++;
+      const id = itemCount;
+      const div = document.createElement('div');
+      div.className = 'item-row';
+      div.id = `item-${id}`;
+      div.innerHTML = `
+        <input type="text"   class="item-desc"  placeholder="Descrição" value="${desc}">
+        <input type="number" class="item-qty"   placeholder="Qtd"  value="${qty}"   min="0" step="0.01" oninput="recalcTotal()">
+        <input type="text"   class="item-unit"  placeholder="Un"   value="${unit}">
+        <input type="text" inputmode="decimal" class="item-price" placeholder="0,00" value="${price}" oninput="recalcTotal()" onblur="fmtBRLInput(this)">
+        <button class="btn-remove" onclick="removeItem(${id})" title="Remover">×</button>
+      `;
+      document.getElementById('items-list').appendChild(div);
+    }
+
+    let totalManuallySet = false;
+
+    function onTotalInput() {
+      totalManuallySet = true;
+      document.getElementById('total-hint').textContent = '';
+    }
+
+    function recalcTotal() {
+      let sum = 0;
+      document.querySelectorAll('#items-list .item-row').forEach(row => {
+        const qty   = parseFloat(row.querySelector('.item-qty').value)   || 0;
+        const price = parseBRL(row.querySelector('.item-price').value);
+        sum += qty * price;
+      });
+      if (sum > 0) {
+        document.getElementById('totalValue').value = sum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        totalManuallySet = false;
+        document.getElementById('total-hint').textContent = '— calculado automaticamente pelos itens';
+      }
+    }
+
+    function removeItem(id) {
+      const el = document.getElementById(`item-${id}`);
+      if (el) el.remove();
+    }
+
+    function getItems() {
+      return Array.from(document.querySelectorAll('#items-list .item-row')).map(row => ({
+        desc:  row.querySelector('.item-desc').value.trim()  || 'Item',
+        qty:   parseFloat(row.querySelector('.item-qty').value)   || 1,
+        unit:  row.querySelector('.item-unit').value.trim()  || 'un',
+        price: parseBRL(row.querySelector('.item-price').value)
+      }));
+    }
+
+    function calcProportions(n) {
+      if (n === 0) return [];
+      if (n === 1) return [1.0];
+      if (n === 2) return [0.65, 0.35];
+      const extra = 0.20 / (n - 2);
+      return [0.50, 0.30, ...Array(n - 2).fill(extra)];
+    }
+
+    function brl(v) {
+      return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function getOSNumber() {
+      const now = new Date();
+      const yy  = now.getFullYear().toString().slice(-2);
+      const mm  = String(now.getMonth() + 1).padStart(2, '0');
+      const dd  = String(now.getDate()).padStart(2, '0');
+      const hh  = String(now.getHours()).padStart(2, '0');
+      const mi  = String(now.getMinutes()).padStart(2, '0');
+      const ss  = String(now.getSeconds()).padStart(2, '0');
+      const rnd = Math.floor(Math.random() * 90 + 10);
+      return `${yy}${mm}${dd}-${hh}${mi}${ss}-${rnd}`;
+    }
+
+    function fmtDate(d) {
+      return d.toLocaleDateString('pt-BR');
+    }
+
+    function generatePDF() {
+      const clientName    = document.getElementById('clientName').value.trim() || 'Não informado';
+      const clientAddress = document.getElementById('clientAddress').value.trim() || 'N/A';
+      const total         = parseBRL(document.getElementById('totalValue').value);
+
+      if (!total || total <= 0) { alert('Informe o valor total do orçamento.'); return; }
+
+      const items = getItems();
+
+      // Injeta cores concretas no <head> para que html2canvas resolva sem CSS variables
+      const p = PALETTES[currentPalette];
+      const pdfStyle = document.createElement('style');
+      pdfStyle.id = 'pdf-palette-override';
+      pdfStyle.textContent = `
+        #os-content .pdf-brand          { background: ${p.primary} !important; }
+        #os-content .pdf-brand-name     { color: ${p.accent} !important; }
+        #os-content .pdf-brand-info     { color: ${p.accentMuted} !important; }
+        #os-content .os-title           { color: ${p.primary} !important; border-bottom-color: ${p.accent} !important; }
+        #os-content table th            { background: ${p.primary} !important; color: ${p.accent} !important; border-bottom-color: ${p.accent} !important; }
+        #os-content table tr:nth-child(even) td { background: ${p.evenRow} !important; }
+        #os-content .lbl                { background: ${p.lblBg} !important; border-left-color: ${p.accent} !important; color: ${p.primary} !important; }
+        #os-content .footer             { border-top-color: ${p.accentFaint} !important; }
+      `;
+      document.head.appendChild(pdfStyle);
+      if (items.length === 0) { alert('Adicione ao menos um item.'); return; }
+
+      const hasItemPrices = items.some(it => it.price > 0);
+      const itemValues = [];
+      if (hasItemPrices) {
+        items.forEach(it => itemValues.push(Math.round(it.qty * it.price * 100) / 100));
+      } else {
+        const props = calcProportions(items.length);
+        let accumulated = 0;
+        for (let i = 0; i < items.length; i++) {
+          if (i < items.length - 1) {
+            const val = Math.round(total * props[i] * 100) / 100;
+            itemValues.push(val);
+            accumulated += val;
+          } else {
+            itemValues.push(Math.round((total - accumulated) * 100) / 100);
+          }
+        }
+      }
+
+      const osNum   = getOSNumber();
+      const today   = new Date();
+      const validAt = new Date(today);
+      validAt.setDate(validAt.getDate() + 10);
+
+      const itemRows = items.map((item, i) => {
+        const unitVal = itemValues[i] / item.qty;
+        return `
+          <tr>
+            <td style="text-align:center;width:28px">${i + 1}</td>
+            <td>${item.desc}</td>
+            <td style="text-align:center;width:44px">${item.qty % 1 === 0 ? item.qty : item.qty.toFixed(2)}</td>
+            <td style="text-align:center;width:50px">${item.unit}</td>
+            <td style="text-align:right;width:90px">${brl(unitVal)}</td>
+            <td style="text-align:right;width:90px"><strong>${brl(itemValues[i])}</strong></td>
+          </tr>`;
+      }).join('');
+
+      document.getElementById('os-content').innerHTML = `
+        <div class="pdf-brand">
+          <div class="pdf-brand-name">MARMORARIA SANTA CRUZ</div>
+          <div class="pdf-brand-info">Embu das Artes / SP<br>CNPJ 51.909.664/0001-20</div>
+        </div>
+
+        <div class="os-title">ORÇAMENTO</div>
+
+        <table>
+          <tr><th colspan="4">DADOS DA EMPRESA</th></tr>
+          <tr>
+            <td class="lbl">Empresa</td>
+            <td colspan="3">Marmoraria Santa Cruz</td>
+          </tr>
+          <tr>
+            <td class="lbl">Endereço</td>
+            <td colspan="3">Rua dos Trabalhadores, 12, Jd. N. S. de Fátima – Embu das Artes/SP</td>
+          </tr>
+          <tr>
+            <td class="lbl">CNPJ</td>
+            <td style="white-space:nowrap; min-width:160px">51.909.664/0001-20</td>
+            <td class="lbl" style="width:14%">Nº OS</td>
+            <td style="white-space:nowrap"><strong>OS-${osNum}</strong></td>
+          </tr>
+          <tr>
+            <td class="lbl">Data de Emissão</td>
+            <td>${fmtDate(today)}</td>
+            <td class="lbl">Válido até</td>
+            <td>${fmtDate(validAt)}</td>
+          </tr>
+        </table>
+
+        <table>
+          <tr><th colspan="2">DADOS DO CLIENTE</th></tr>
+          <tr>
+            <td class="lbl">Nome</td>
+            <td>${clientName}</td>
+          </tr>
+          <tr>
+            <td class="lbl">Endereço</td>
+            <td>${clientAddress}</td>
+          </tr>
+        </table>
+
+        <table>
+          <tr>
+            <th>#</th>
+            <th>Descrição</th>
+            <th style="text-align:center">Qtd</th>
+            <th style="text-align:center">Unid.</th>
+            <th style="text-align:right">Valor Unit.</th>
+            <th style="text-align:right">Valor Total</th>
+          </tr>
+          ${itemRows}
+          <tr>
+            <td colspan="5" style="background:${p.primary};color:white;font-weight:bold;font-size:12px;text-align:right;padding:6px 14px 6px 10px">TOTAL GERAL</td>
+            <td style="background:${p.primary};color:${p.accent};font-weight:bold;font-size:12px;text-align:right;padding:6px 10px">${brl(total)}</td>
+          </tr>
+        </table>
+
+        <table>
+          <tr><th colspan="2">CONDIÇÕES COMERCIAIS</th></tr>
+          <tr>
+            <td class="lbl">Forma de Pagamento</td>
+            <td>50% na entrada e o restante na entrega ou em até 6x no cartão sem juros</td>
+          </tr>
+          <tr>
+            <td class="lbl">Prazo de Entrega</td>
+            <td>20 dias úteis após aprovação do orçamento</td>
+          </tr>
+          <tr>
+            <td class="lbl">Validade do Orçamento</td>
+            <td>10 dias</td>
+          </tr>
+        </table>
+
+        <div class="signature-area">
+          <div class="sig-box" style="border-top:2px solid ${p.accent};color:${p.primary}">
+            Marmoraria Santa Cruz<br>
+            <br/>
+          </div>
+          <div class="sig-box" style="border-top:2px solid ${p.accent};color:${p.primary}">
+            ${clientName}<br>
+            <br/>
+          </div>
+        </div>
+
+        <div class="footer">
+          Documento gerado em ${fmtDate(today)}
+        </div>
+      `;
+
+      const btn = document.getElementById('btn-gen');
+      btn.disabled = true;
+      btn.textContent = 'Gerando PDF...';
+
+      const opt = {
+        margin: [0, 0, 0, 0],
+        filename: `OS-${osNum}_${clientName.replace(/\s+/g, '_')}.pdf`,
+        image:     { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+        pagebreak:   { mode: ['avoid-all', 'css', 'legacy'] },
+        jsPDF:     { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf()
+        .set(opt)
+        .from(document.getElementById('os-content'))
+        .save()
+        .then(() => {
+          document.head.removeChild(document.getElementById('pdf-palette-override'));
+          btn.disabled = false;
+          btn.innerHTML = '&#8595; Gerar PDF';
+        });
+    }
+  </script>
+
+</body>
+</html>
